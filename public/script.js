@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:5520/books";
+const API_URL = "https://your-app.onrender.com/books";
 
 let book = { title: "", author: "", description: "", tags: [], chapters: [] };
 
@@ -38,7 +38,7 @@ async function saveBook() {
             return;
         }
 
-        const response = await fetch("http://localhost:5520/books/save", {
+        const response = await fetch("https://your-app.onrender.com/books/save", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -91,7 +91,7 @@ async function submitBook(bookId) {
             return;
         }
 
-        const response = await fetch(`http://localhost:5520/books/submit/${bookId}`, {
+        const response = await fetch(`https://your-app.onrender.com/books/submit/${bookId}`, {
             method: "PUT",
             headers: {
                 "Authorization": `Bearer ${token}`
@@ -123,7 +123,7 @@ async function fetchMyBooks() {
             return;
         }
 
-        const response = await fetch("http://localhost:5520/my-books", {
+        const response = await fetch("https://your-app.onrender.com/my-books", {
             method: "GET",
             headers: { "Authorization": `Bearer ${token}` }
         });
@@ -180,7 +180,7 @@ async function editBook(bookId) {
             return;
         }
 
-        const response = await fetch(`http://localhost:5520/books/${bookId}`, {
+        const response = await fetch(`https://your-app.onrender.com/books/${bookId}`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
