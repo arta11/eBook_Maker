@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - eBook Repository</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="register-container">
+        <h2>Register</h2>
+        <input type="text" id="username" placeholder="Enter Username">
+        <input type="email" id="email" placeholder="Enter Email">
+        <input type="password" id="password" placeholder="Enter Password">
+        <button onclick="register()">Register</button>
+        <p>Already have an account? <a href="login.html">Login here</a></p>
+        <div id="register-error" class="error-message" hidden></div>
+    </div>
+    
+    <script>
+        async function register() {
+            const username = document.getElementById("username").value;
+            const email = document.getElementById("email").value;
+            const password = document.getElementById("password").value;
+            
+            if (!username || !email || !password) {
+                alert("Please fill in all fields");
+                return;
+            }
+
+            try {
+                const response = await fetch("http://localhost:5520/register", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ username, email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    alert("Registration successful! You can now log in.");
+                    window.location.href = "index.html";
+                } else {
+                    document.getElementById("register-error").innerText = data.message;
+                    document.getElementById("register-error").hidden = false;
+                }
+            } catch (error) {
+                console.error("Registration error:", error);
+                alert("Failed to register. Check server connection.");
+            }
+        }
+    </script>
+</body>
+</html>

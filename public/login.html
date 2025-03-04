@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - eBook Repository</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="login-container">
+        <h2>Login</h2>
+        <input type="email" id="email" placeholder="Enter Email">
+        <input type="password" id="password" placeholder="Enter Password">
+        <button onclick="login()">Login</button>
+        <p>Don't have an account? <a href="register.html">Register here</a></p>
+        <div id="login-error" class="error-message" hidden></div>
+    </div>
+    
+    <script>
+        async function login() {
+            const email = document.getElementById("email").value;
+            const password = document.getElementById("password").value;
+            
+            if (!email || !password) {
+                alert("Please enter both email and password");
+                return;
+            }
+
+            try {
+                const response = await fetch("http://localhost:5520/login", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    localStorage.setItem("token", data.token);
+                    localStorage.setItem("role", data.role);
+                    alert("Login successful");
+                    
+                    if (data.role === "admin") {
+                        window.location.href = "admin_dashboard.html";
+                    } else {
+                        window.location.href = "index.html";
+                    }
+                } else {
+                    document.getElementById("login-error").innerText = data.message;
+                    document.getElementById("login-error").hidden = false;
+                }
+            } catch (error) {
+                console.error("Login error:", error);
+                alert("Failed to login. Check server connection.");
+            }
+        }
+    </script>
+</body>
+</html>

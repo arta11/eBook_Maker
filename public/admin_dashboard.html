@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Book Approvals</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="admin-container">
+        <h2>Pending Books for Approval</h2>
+        <div id="pending-books"></div>
+    </div>
+
+    <script>
+        async function fetchPendingBooks() {
+            try {
+                const token = localStorage.getItem("token");
+                if (!token) {
+                    alert("Unauthorized. Please log in as an admin.");
+                    window.location.href = "login.html";
+                    return;
+                }
+
+                const response = await fetch("http://localhost:5520/pending-books", {
+                    method: "GET",
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+
+                const data = await response.json();
+
+                // Ensure we have an array
+                if (!Array.isArray(data)) {
+                    console.error("Unexpected response format:", data);
+                    alert("Failed to load pending books.");
+                    return;
+                }
+
+                const container = document.getElementById("pending-books");
+                container.innerHTML = "";
+
+                data.forEach(book => {
+                    const bookElement = document.createElement("div");
+                    bookElement.className = "book-item";
+                    bookElement.innerHTML = `
+                        <h3>${book.bookTitle}</h3>
+                        <p>Author: ${book.author}</p>
+                        <p>Description: ${book.description}</p>
+                        <button onclick="approveBook('${book._id}')">Approve</button>
+                        <button onclick="rejectBook('${book._id}')">Reject</button>
+                    `;
+                    container.appendChild(bookElement);
+                });
+            } catch (err) {
+                console.error("Error fetching pending books:", err);
+                alert("Failed to load pending books.");
+            }
+        }
+
+        async function approveBook(bookId) {
+            await updateBookStatus(bookId, "approved");
+        }
+
+        async function rejectBook(bookId) {
+            await updateBookStatus(bookId, "rejected");
+        }
+
+        async function updateBookStatus(bookId, status) {
+            try {
+                const token = localStorage.getItem("token");
+                const response = await fetch(`http://localhost:5520/books/${bookId}/status`, {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ status })
+                });
+
+                if (response.ok) {
+                    alert(`Book ${status} successfully!`);
+                    fetchPendingBooks(); // Refresh list after update
+                } else {
+                    alert("Error updating book status");
+                }
+            } catch (err) {
+                console.error("Error updating book status:", err);
+                alert("Failed to update book status.");
+            }
+        }
+
+        fetchPendingBooks(); // Load pending books on page load
+
+    </script>
+</body>
+</html>
