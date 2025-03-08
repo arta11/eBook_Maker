@@ -4,22 +4,22 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const bodyParser = require("body-parser");
 const cors = require("cors");
-const path = require("path");
-require("dotenv").config();
 
 const app = express();
-const SECRET_KEY = process.env.JWT_SECRET || "your_secret_key";
+const PORT = 5520;
+const SECRET_KEY = "your_secret_key"; // Used for JWT authentication
+
+// MongoDB Local Connection
+mongoose.connect("mongodb://127.0.0.1:27017/ebook_repository", {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+})
+.then(() => console.log("✅ Connected to MongoDB (Local)"))
+.catch(err => console.error("❌ MongoDB connection error:", err));
 
 // Middleware
 app.use(cors());
 app.use(bodyParser.json());
-app.use(express.static(path.join(__dirname, "public")));
-
-// MongoDB Connection (Using MongoDB Atlas)
-mongoose.connect(process.env.MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-});
 
 // User Schema
 const UserSchema = new mongoose.Schema({
@@ -40,7 +40,7 @@ const BookSchema = new mongoose.Schema({
 });
 const Book = mongoose.model("Book", BookSchema);
 
-// Register
+// Register (Authors Only)
 app.post("/register", async (req, res) => {
     try {
         const { username, email, password } = req.body;
@@ -112,9 +112,7 @@ app.post("/books/save", authenticate, async (req, res) => {
 app.put("/books/submit/:id", authenticate, async (req, res) => {
     try {
         const book = await Book.findById(req.params.id);
-        if (!book) {
-            return res.status(404).json({ message: "Book not found" });
-        }
+        if (!book) return res.status(404).json({ message: "Book not found" });
 
         if (req.user.email !== book.author) {
             return res.status(403).json({ message: "Unauthorized to submit this book" });
@@ -126,7 +124,6 @@ app.put("/books/submit/:id", authenticate, async (req, res) => {
 
         book.status = "pending"; 
         await book.save();
-
         res.json({ message: "Book submitted for approval!", book });
     } catch (err) {
         res.status(500).json({ message: "Error submitting book", error: err.message });
@@ -183,5 +180,4 @@ app.put("/books/:id/status", authenticate, async (req, res) => {
     }
 });
 
-const PORT = process.env.PORT || 5520;
-app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+app.listen(PORT, () => console.log(`✅ Server running on http://localhost:${PORT}`));
